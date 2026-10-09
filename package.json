@@ -15,6 +15,13 @@
   "license": "MIT",
   "commands": [
     {
+      "name": "browse-tokens",
+      "title": "Browse Tokens",
+      "subtitle": "Style Dictionary",
+      "description": "Browse, search, and copy design tokens of the active project",
+      "mode": "view"
+    },
+    {
       "name": "manage-projects",
       "title": "Manage Projects",
       "subtitle": "Style Dictionary",
