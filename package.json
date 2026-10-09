@@ -15,11 +15,11 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "style-dictionary",
-      "title": "style dictionary",
-      "subtitle": "style",
-      "description": "Load your project's style dictionary tokens and make quick access for them",
-      "mode": "no-view"
+      "name": "manage-projects",
+      "title": "Manage Projects",
+      "subtitle": "Style Dictionary",
+      "description": "Add, edit, and switch style-dictionary token projects",
+      "mode": "view"
     }
   ],
   "tools": [],
