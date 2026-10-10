@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Grid, Icon } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
+import { useState } from "react";
 import { groupPreview, preview } from "./preview";
 import ManageProjects, { ProjectForm } from "./manage-projects";
 import { Project, useActiveProjectId, useProjects } from "./store";
@@ -52,14 +53,26 @@ type LevelProps = {
 };
 
 function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
+  const [search, setSearch] = useState("");
   const inScope = tokens.filter((t) => startsWith(t.path, path));
-  const leaves = inScope.filter((t) => t.path.length === path.length + 1);
-  const groups = [...new Set(inScope.filter((t) => t.path.length > path.length + 1).map((t) => t.path[path.length]))];
+  const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
+  const leaves = terms.length
+    ? inScope.filter((t) => {
+        const haystack = `${t.path.join(".")} ${t.value} ${t.alias ?? ""}`.toLowerCase();
+        return terms.every((term) => haystack.includes(term));
+      })
+    : inScope.filter((t) => t.path.length === path.length + 1);
+  const groups = terms.length
+    ? []
+    : [...new Set(inScope.filter((t) => t.path.length > path.length + 1).map((t) => t.path[path.length]))];
 
   return (
     <Grid
       columns={5}
       isLoading={isLoading}
+      filtering={false}
+      onSearchTextChange={setSearch}
+      searchBarPlaceholder="Search tokens by name, path, or value"
       navigationTitle={path.length ? path.join(".") : project.name}
       searchBarAccessory={accessory}
     >
@@ -88,11 +101,11 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
           );
         })}
       </Grid.Section>
-      <Grid.Section title="Tokens">
+      <Grid.Section title={terms.length ? `${leaves.length} matches` : "Tokens"}>
         {leaves.map((t) => (
           <Grid.Item
             key={t.path.join(".")}
-            title={t.path[t.path.length - 1]}
+            title={terms.length ? t.path.slice(path.length).join(".") : t.path[t.path.length - 1]}
             subtitle={t.value}
             content={preview(t)}
             actions={
