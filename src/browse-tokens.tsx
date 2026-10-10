@@ -1,5 +1,6 @@
 import { Action, ActionPanel, Grid, Icon } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
+import { groupPreview, preview } from "./preview";
 import ManageProjects, { ProjectForm } from "./manage-projects";
 import { Project, useActiveProjectId, useProjects } from "./store";
 import { loadTokens, startsWith, Token } from "./tokens";
@@ -65,12 +66,13 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
       <Grid.Section title="Groups">
         {groups.map((g) => {
           const groupPath = [...path, g];
+          const children = inScope.filter((t) => startsWith(t.path, groupPath));
           return (
             <Grid.Item
               key={g}
               title={g}
-              subtitle={`${inScope.filter((t) => startsWith(t.path, groupPath)).length} tokens`}
-              content={Icon.Folder}
+              subtitle={`${children.length} tokens`}
+              content={groupPreview(children) ?? { source: Icon.Folder, tintColor: "#888" }}
               actions={
                 <ActionPanel>
                   <Action.Push
@@ -92,7 +94,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
             key={t.path.join(".")}
             title={t.path[t.path.length - 1]}
             subtitle={t.value}
-            content={Icon.Dot}
+            content={preview(t)}
             actions={
               <ActionPanel>
                 <Action.CopyToClipboard title="Copy Value" content={t.value} />

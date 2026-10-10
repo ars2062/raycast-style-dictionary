@@ -1,0 +1,75 @@
+import { Image } from "@raycast/api";
+import { stringify, Token } from "./tokens";
+
+const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+const svg = (body: string): Image.ImageLike => ({
+  source: `data:image/svg+xml;base64,${Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">${body}</svg>`,
+  ).toString("base64")}`,
+});
+const text = (
+  t: string,
+  { y = 100, size = 28, family = "-apple-system, 'Segoe UI', sans-serif", weight = "normal" } = {},
+) =>
+  `<text x="100" y="${y}" text-anchor="middle" dominant-baseline="central" fill="#888" font-size="${size}" font-family="${esc(family)}" font-weight="${esc(weight)}">${esc(t)}</text>`;
+const checker = `<defs><pattern id="c" width="20" height="20" patternUnits="userSpaceOnUse"><rect width="20" height="20" fill="#fff"/><rect width="10" height="10" fill="#ccc"/><rect x="10" y="10" width="10" height="10" fill="#ccc"/></pattern></defs><rect width="200" height="200" rx="16" fill="url(#c)"/>`;
+const px = (v: unknown) => {
+  const s = stringify(v, "dimension");
+  return parseFloat(s) * (/r?em$/.test(s) ? 16 : 1) || 0;
+};
+const field = (v: unknown, key: string): unknown =>
+  v && typeof v === "object" ? (v as Record<string, unknown>)[key] : undefined;
+
+export function preview(t: Token): Image.ImageLike {
+  switch (t.kind) {
+    case "color":
+      return svg(`${checker}<rect width="200" height="200" rx="16" fill="${esc(t.value)}"/>`);
+    case "dimension": {
+      const w = t.value.endsWith("%") ? parseFloat(t.value) * 1.8 : px(t.value) * 2;
+      return svg(
+        `<rect x="10" y="76" width="${Math.min(Math.max(w, 2), 180)}" height="16" rx="4" fill="#5b8def"/>${text(t.value, { y: 140, size: 26 })}`,
+      );
+    }
+    case "fontFamily":
+      return svg(text("Aa", { size: 96, family: t.value }));
+    case "fontWeight":
+      return svg(text("Aa", { size: 96, weight: t.value }));
+    case "typography": {
+      return svg(
+        text("Aa", {
+          size: Math.min(Math.max(px(field(t.raw, "fontSize")) * 3, 24), 120),
+          family: stringify(field(t.raw, "fontFamily") ?? "sans-serif", "fontFamily"),
+          weight: stringify(field(t.raw, "fontWeight") ?? "normal", "other"),
+        }),
+      );
+    }
+    case "shadow": {
+      const layers = [t.raw].flat().filter((s) => !field(s, "inset"));
+      const filters = layers
+        .map(
+          (s, i) =>
+            `<filter id="s${i}" x="-50%" y="-50%" width="200%" height="200%"><feDropShadow dx="${px(field(s, "offsetX")) * 2}" dy="${px(field(s, "offsetY")) * 2}" stdDeviation="${px(field(s, "blur"))}" flood-color="${esc(stringify(field(s, "color") ?? "#000", "color"))}"/></filter>`,
+        )
+        .join("");
+      const rects = layers.map(
+        (_, i) => `<rect x="50" y="50" width="100" height="100" rx="12" fill="#fff" filter="url(#s${i})"/>`,
+      );
+      return svg(
+        `<defs>${filters}</defs>${rects.join("")}<rect x="50" y="50" width="100" height="100" rx="12" fill="#fff"/>`,
+      );
+    }
+    default:
+      return svg(text(t.value.length > 12 ? `${t.value.slice(0, 11)}…` : t.value));
+  }
+}
+
+export function groupPreview(tokens: Token[]): Image.ImageLike | undefined {
+  const colors = tokens.filter((t) => t.kind === "color").slice(0, 4);
+  if (!colors.length) return undefined;
+  const w = 200 / colors.length;
+  return svg(
+    `${checker}<clipPath id="r"><rect width="200" height="200" rx="16"/></clipPath><g clip-path="url(#r)">${colors
+      .map((t, i) => `<rect x="${i * w}" width="${w}" height="200" fill="${esc(t.value)}"/>`)
+      .join("")}</g>`,
+  );
+}
