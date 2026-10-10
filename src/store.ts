@@ -3,6 +3,7 @@ import { useCachedState } from "@raycast/utils";
 import { useEffect } from "react";
 
 export type Project = { id: string; name: string; dirs: string[]; templates?: string };
+export type Pin = { path: string[]; group: boolean };
 
 export function useStored<T>(key: string, initial: T) {
   const [value, setCached] = useCachedState<T>(`stored:${key}`, initial);
@@ -18,3 +19,4 @@ export function useStored<T>(key: string, initial: T) {
 
 export const useProjects = () => useStored<Project[]>("projects", []);
 export const useActiveProjectId = () => useStored<string>("activeProject", "");
+export const usePins = (projectId: string) => useStored<(Pin | null)[]>(`pins:${projectId}`, []);
