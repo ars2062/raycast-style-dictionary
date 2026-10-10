@@ -4,6 +4,7 @@ import { useState } from "react";
 import { groupPreview, preview } from "./preview";
 import ManageProjects, { ProjectForm } from "./manage-projects";
 import { Project, useActiveProjectId, useProjects } from "./store";
+import { parseTemplates, renderTemplates } from "./templates";
 import { loadTokens, startsWith, Token } from "./tokens";
 
 export default function Command() {
@@ -54,6 +55,7 @@ type LevelProps = {
 
 function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
   const [search, setSearch] = useState("");
+  const templates = parseTemplates(project.templates);
   const inScope = tokens.filter((t) => startsWith(t.path, path));
   const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
   const leaves = terms.length
@@ -113,6 +115,11 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
                 <Action.CopyToClipboard title="Copy Value" content={t.value} />
                 <Action.CopyToClipboard title="Copy Name" content={t.path.join(".")} />
                 {t.alias && <Action.CopyToClipboard title="Copy Alias" content={t.alias} />}
+                <ActionPanel.Section title="Templates">
+                  {renderTemplates(templates, t).map((out, i) => (
+                    <Action.CopyToClipboard key={i} title={`Copy ${out}`} content={out} />
+                  ))}
+                </ActionPanel.Section>
                 <Action.Push title="Manage Projects" icon={Icon.Gear} target={<ManageProjects />} />
               </ActionPanel>
             }

@@ -69,7 +69,7 @@ export default function ManageProjects() {
   );
 }
 
-type FormValues = { name: string; dirs: string[] };
+type FormValues = { name: string; dirs: string[]; templates: string };
 
 export function ProjectForm({ project }: { project?: Project }) {
   const { pop } = useNavigation();
@@ -81,7 +81,12 @@ export function ProjectForm({ project }: { project?: Project }) {
       await showToast({ style: Toast.Style.Failure, title: "Name and at least one directory are required" });
       return;
     }
-    const next: Project = { id: project?.id ?? randomUUID(), name: values.name.trim(), dirs: values.dirs };
+    const next: Project = {
+      id: project?.id ?? randomUUID(),
+      name: values.name.trim(),
+      dirs: values.dirs,
+      templates: values.templates,
+    };
     await setProjects(project ? projects.map((p) => (p.id === next.id ? next : p)) : [...projects, next]);
     if (!activeId) await setActiveId(next.id);
     pop();
@@ -106,6 +111,16 @@ export function ProjectForm({ project }: { project?: Project }) {
         allowMultipleSelection
         defaultValue={project?.dirs}
       />
+      <Form.TextArea
+        id="templates"
+        title="Copy Templates"
+        placeholder={'var(--{kebab-name})\n@color design.color("{name}")'}
+        info={
+          "One template per line; each becomes a copy action on matching tokens. Start a line with @group.path to apply it only to that group, where {name} is relative to the group."
+        }
+        defaultValue={project?.templates}
+      />
+      <Form.Description title="Placeholders" text="{name}  {path}  {kebab-name}  {camel-name}  {snake-name}  {value}" />
     </Form>
   );
 }

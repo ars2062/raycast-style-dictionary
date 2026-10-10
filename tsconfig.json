@@ -12,6 +12,8 @@
     "forceConsistentCasingInFileNames": true,
     "jsx": "react-jsx",
     "types": ["node"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
     "resolveJsonModule": true
   }
 }

@@ -2,7 +2,7 @@ import { LocalStorage } from "@raycast/api";
 import { useCachedState } from "@raycast/utils";
 import { useEffect } from "react";
 
-export type Project = { id: string; name: string; dirs: string[] };
+export type Project = { id: string; name: string; dirs: string[]; templates?: string };
 
 export function useStored<T>(key: string, initial: T) {
   const [value, setCached] = useCachedState<T>(`stored:${key}`, initial);
