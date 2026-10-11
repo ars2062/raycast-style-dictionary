@@ -33,6 +33,7 @@
   "dependencies": {
     "@raycast/api": "^1.104.20",
     "@raycast/utils": "^2.2.7",
+    "json5": "^2.2.3",
     "style-dictionary": "^5.6.1"
   },
   "devDependencies": {

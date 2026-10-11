@@ -1,4 +1,6 @@
+import JSON5 from "json5";
 import StyleDictionary from "style-dictionary";
+import { convertToDTCG } from "style-dictionary/utils";
 
 export type Kind = "color" | "dimension" | "duration" | "fontFamily" | "fontWeight" | "typography" | "shadow" | "other";
 
@@ -14,14 +16,24 @@ export type Token = {
 export async function loadTokens(dirs: string[]): Promise<Token[]> {
   const sd = new StyleDictionary({
     source: dirs.map((d) => `${d.replaceAll("\\", "/")}/**/*.{json,json5}`),
+    usesDtcg: true,
+    hooks: {
+      parsers: {
+        "to-dtcg": {
+          pattern: /\.json5?$/,
+          parser: ({ contents }) => convertToDTCG(JSON5.parse(contents), { applyTypesToGroup: false }),
+        },
+      },
+    },
+    parsers: ["to-dtcg"],
     platforms: { raw: {} },
     log: { verbosity: "silent", warnings: "disabled", errors: { brokenReferences: "console" } },
   });
   const { allTokens } = await sd.getPlatformTokens("raw");
   return allTokens.map((t) => {
-    const raw = t.$value ?? t.value;
-    const original = t.original.$value ?? t.original.value;
-    const type = t.$type ?? t.type;
+    const raw = t.$value;
+    const original = t.original.$value;
+    const type = t.$type;
     const kind = detectKind(type, raw);
     return {
       path: t.path,
