@@ -1,4 +1,5 @@
-import { Image } from "@raycast/api";
+import { Grid, Image } from "@raycast/api";
+import { colorFormats } from "./color";
 import { stringify, Token } from "./tokens";
 
 const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -20,10 +21,13 @@ const px = (v: unknown) => {
 const field = (v: unknown, key: string): unknown =>
   v && typeof v === "object" ? (v as Record<string, unknown>)[key] : undefined;
 
-export function preview(t: Token): Image.ImageLike {
+export function preview(t: Token): Grid.Item.Props["content"] {
   switch (t.kind) {
-    case "color":
-      return svg(`${checker}<rect width="200" height="200" rx="16" fill="${esc(t.value)}"/>`);
+    case "color": {
+      const rgb = colorFormats(t.value)?.rgb;
+      if (rgb) return { color: { light: rgb, dark: rgb, adjustContrast: false } };
+      return svg(text(t.value));
+    }
     case "dimension": {
       const w = t.value.endsWith("%") ? parseFloat(t.value) * 1.8 : px(t.value) * 2;
       return svg(
@@ -64,12 +68,12 @@ export function preview(t: Token): Image.ImageLike {
 }
 
 export function groupPreview(tokens: Token[]): Image.ImageLike | undefined {
-  const colors = tokens.filter((t) => t.kind === "color").slice(0, 4);
+  const colors = tokens.flatMap((t) => (t.kind === "color" ? (colorFormats(t.value)?.rgb ?? []) : [])).slice(0, 4);
   if (!colors.length) return undefined;
   const w = 200 / colors.length;
   return svg(
     `${checker}<clipPath id="r"><rect width="200" height="200" rx="16"/></clipPath><g clip-path="url(#r)">${colors
-      .map((t, i) => `<rect x="${i * w}" width="${w}" height="200" fill="${esc(t.value)}"/>`)
+      .map((rgb, i) => `<rect x="${i * w}" width="${w}" height="200" fill="${rgb}"/>`)
       .join("")}</g>`,
   );
 }
