@@ -1,6 +1,7 @@
 import { Action, ActionPanel, Grid, Icon, Keyboard } from "@raycast/api";
 import { useCachedPromise } from "@raycast/utils";
 import { useState } from "react";
+import { colorFormats } from "./color";
 import { groupPreview, preview } from "./preview";
 import ManageProjects, { ProjectForm } from "./manage-projects";
 import { Pin, Project, useActiveProjectId, usePins, useProjects } from "./store";
@@ -58,10 +59,17 @@ const openShortcut = (slot: number): Keyboard.Shortcut => ({
   macOS: { modifiers: ["cmd"], key: slotKey(slot) },
   Windows: { modifiers: ["ctrl"], key: slotKey(slot) },
 });
-const pinShortcut = (slot: number): Keyboard.Shortcut => ({
-  macOS: { modifiers: ["cmd", "opt"], key: slotKey(slot) },
-  Windows: { modifiers: ["ctrl", "alt"], key: slotKey(slot) },
+const optCmd = (key: Keyboard.KeyEquivalent): Keyboard.Shortcut => ({
+  macOS: { modifiers: ["cmd", "opt"], key },
+  Windows: { modifiers: ["ctrl", "alt"], key },
 });
+const pinShortcut = (slot: number) => optCmd(slotKey(slot));
+const COLOR_FORMATS = [
+  { id: "hex", title: "HEX", key: "h" },
+  { id: "rgb", title: "RGB", key: "r" },
+  { id: "hsl", title: "HSL", key: "s" },
+  { id: "oklch", title: "OKLCH", key: "l" },
+] as const;
 
 function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
   const [search, setSearch] = useState("");
@@ -155,27 +163,42 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
     );
   };
 
-  const tokenItem = (t: Token, title: string, key = t.path.join(".")) => (
-    <Grid.Item
-      key={key}
-      title={title}
-      subtitle={t.value}
-      content={preview(t)}
-      actions={
-        <ActionPanel>
-          <Action.CopyToClipboard title="Copy Value" content={t.value} />
-          <Action.CopyToClipboard title="Copy Name" content={t.path.join(".")} />
-          {t.alias && <Action.CopyToClipboard title="Copy Alias" content={t.alias} />}
-          <ActionPanel.Section title="Templates">
-            {renderTemplates(templates, t).map((out, i) => (
-              <Action.CopyToClipboard key={i} title={`Copy ${out}`} content={out} />
-            ))}
-          </ActionPanel.Section>
-          {pinActions({ path: t.path, group: false })}
-        </ActionPanel>
-      }
-    />
-  );
+  const tokenItem = (t: Token, title: string, key = t.path.join(".")) => {
+    const formats = t.kind === "color" ? colorFormats(t.value) : undefined;
+    return (
+      <Grid.Item
+        key={key}
+        title={title}
+        subtitle={t.value}
+        content={preview(t)}
+        actions={
+          <ActionPanel>
+            <Action.CopyToClipboard title="Copy Value" content={t.value} />
+            <Action.CopyToClipboard title="Copy Name" content={t.path.join(".")} />
+            {t.alias && <Action.CopyToClipboard title="Copy Alias" content={t.alias} />}
+            {formats && (
+              <ActionPanel.Section title="Color Formats">
+                {COLOR_FORMATS.map((f) => (
+                  <Action.CopyToClipboard
+                    key={f.id}
+                    title={`Copy ${f.title}`}
+                    content={formats[f.id]}
+                    shortcut={optCmd(f.key)}
+                  />
+                ))}
+              </ActionPanel.Section>
+            )}
+            <ActionPanel.Section title="Templates">
+              {renderTemplates(templates, t).map((out, i) => (
+                <Action.CopyToClipboard key={i} title={`Copy ${out}`} content={out} />
+              ))}
+            </ActionPanel.Section>
+            {pinActions({ path: t.path, group: false })}
+          </ActionPanel>
+        }
+      />
+    );
+  };
 
   return (
     <Grid
