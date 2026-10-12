@@ -13,7 +13,7 @@ import {
   useNavigation,
 } from "@raycast/api";
 import { randomUUID } from "node:crypto";
-import { Project, useActiveProjectId, useProjects } from "./store";
+import { DefaultAction, Project, useActiveProjectId, useProjects } from "./store";
 
 export default function ManageProjects() {
   const [projects, setProjects] = useProjects();
@@ -69,7 +69,7 @@ export default function ManageProjects() {
   );
 }
 
-type FormValues = { name: string; dirs: string[]; templates: string };
+type FormValues = { name: string; dirs: string[]; templates: string; defaultAction: DefaultAction };
 
 export function ProjectForm({ project }: { project?: Project }) {
   const { pop } = useNavigation();
@@ -86,6 +86,7 @@ export function ProjectForm({ project }: { project?: Project }) {
       name: values.name.trim(),
       dirs: values.dirs,
       templates: values.templates,
+      defaultAction: values.defaultAction,
     };
     await setProjects(project ? projects.map((p) => (p.id === next.id ? next : p)) : [...projects, next]);
     if (!activeId) await setActiveId(next.id);
@@ -121,6 +122,16 @@ export function ProjectForm({ project }: { project?: Project }) {
         defaultValue={project?.templates}
       />
       <Form.Description title="Placeholders" text="{name}  {path}  {kebab-name}  {camel-name}  {snake-name}  {value}" />
+      <Form.Dropdown
+        id="defaultAction"
+        title="Enter Copies"
+        info="Template copies the most specific matching template; tokens without one fall back to the value."
+        defaultValue={project?.defaultAction ?? "value"}
+      >
+        <Form.Dropdown.Item value="value" title="Value" />
+        <Form.Dropdown.Item value="name" title="Name" />
+        <Form.Dropdown.Item value="template" title="Template" />
+      </Form.Dropdown>
     </Form>
   );
 }

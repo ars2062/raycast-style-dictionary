@@ -92,6 +92,15 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
   const livePins = pins.flatMap((pin, slot) =>
     pin && (pin.group ? childrenOf(pin.path).length : findToken(pin.path)) ? [{ ...pin, slot }] : [],
   );
+  function copyActions(t: Token) {
+    const value = { title: "Copy Value", content: t.value };
+    const name = { title: "Copy Name", content: t.path.join(".") };
+    const rendered = renderTemplates(templates, t).map((out) => ({ title: `Copy ${out}`, content: out }));
+    if (project.defaultAction === "template" && rendered.length) {
+      return { main: [rendered[0], value, name], templates: rendered.slice(1) };
+    }
+    return { main: project.defaultAction === "name" ? [name, value] : [value, name], templates: rendered };
+  }
   const openGroup = (p: string[]) => <Level project={project} tokens={tokens} path={p} />;
 
   function pinActions(target: Pin) {
@@ -117,7 +126,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
               <Action.CopyToClipboard
                 key={slot}
                 title={`Copy ${name}`}
-                content={token.value}
+                content={copyActions(token).main[0].content}
                 shortcut={openShortcut(slot)}
               />
             );
@@ -165,6 +174,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
 
   const tokenItem = (t: Token, title: string, key = t.path.join(".")) => {
     const formats = t.kind === "color" ? colorFormats(t.value) : undefined;
+    const copies = copyActions(t);
     return (
       <Grid.Item
         key={key}
@@ -173,8 +183,9 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
         content={preview(t)}
         actions={
           <ActionPanel>
-            <Action.CopyToClipboard title="Copy Value" content={t.value} />
-            <Action.CopyToClipboard title="Copy Name" content={t.path.join(".")} />
+            {copies.main.map((a, i) => (
+              <Action.CopyToClipboard key={i} {...a} />
+            ))}
             {t.alias && <Action.CopyToClipboard title="Copy Alias" content={t.alias} />}
             {formats && (
               <ActionPanel.Section title="Color Formats">
@@ -189,8 +200,8 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
               </ActionPanel.Section>
             )}
             <ActionPanel.Section title="Templates">
-              {renderTemplates(templates, t).map((out, i) => (
-                <Action.CopyToClipboard key={i} title={`Copy ${out}`} content={out} />
+              {copies.templates.map((a, i) => (
+                <Action.CopyToClipboard key={i} {...a} />
               ))}
             </ActionPanel.Section>
             {pinActions({ path: t.path, group: false })}

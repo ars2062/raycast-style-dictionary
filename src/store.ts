@@ -2,7 +2,14 @@ import { LocalStorage } from "@raycast/api";
 import { useCachedState } from "@raycast/utils";
 import { useEffect } from "react";
 
-export type Project = { id: string; name: string; dirs: string[]; templates?: string };
+export type DefaultAction = "value" | "name" | "template";
+export type Project = {
+  id: string;
+  name: string;
+  dirs: string[];
+  templates?: string;
+  defaultAction?: DefaultAction;
+};
 export type Pin = { path: string[]; group: boolean };
 
 export function useStored<T>(key: string, initial: T) {
