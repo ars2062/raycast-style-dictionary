@@ -63,6 +63,8 @@ npm test
 npm run lint
 ```
 
+`examples/tokens` holds a small demo token set (mixed legacy and DTCG files) you can add as a project to try things out.
+
 ## License
 
 MIT
