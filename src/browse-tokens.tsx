@@ -5,6 +5,7 @@ import { colorFormats } from "./color";
 import { groupPreview, preview } from "./preview";
 import ManageProjects, { ProjectForm } from "./manage-projects";
 import { Pin, Project, useActiveProjectId, usePins, useProjects } from "./store";
+import { tokenMatcher } from "./search";
 import { parseTemplates, renderTemplates } from "./templates";
 import { loadTokens, startsWith, Token } from "./tokens";
 
@@ -76,14 +77,11 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
   const [pins, setPins] = usePins(project.id);
   const templates = parseTemplates(project.templates);
   const inScope = tokens.filter((t) => startsWith(t.path, path));
-  const terms = search.toLowerCase().split(/\s+/).filter(Boolean);
-  const leaves = terms.length
-    ? inScope.filter((t) => {
-        const haystack = `${t.path.join(".")} ${t.value} ${t.alias ?? ""}`.toLowerCase();
-        return terms.every((term) => haystack.includes(term));
-      })
+  const query = search.trim();
+  const leaves = query
+    ? inScope.filter(tokenMatcher(search))
     : inScope.filter((t) => t.path.length === path.length + 1);
-  const groups = terms.length
+  const groups = query
     ? []
     : [...new Set(inScope.filter((t) => t.path.length > path.length + 1).map((t) => t.path[path.length]))];
 
@@ -217,11 +215,11 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
       isLoading={isLoading}
       filtering={false}
       onSearchTextChange={setSearch}
-      searchBarPlaceholder="Search tokens by name, path, or value"
+      searchBarPlaceholder="Search by name, path, or value (any color format)"
       navigationTitle={path.length ? path.join(".") : project.name}
       searchBarAccessory={accessory}
     >
-      {path.length === 0 && !terms.length && (
+      {path.length === 0 && !query && (
         <Grid.Section title="Pinned">
           {livePins.map(({ path: p, group, slot }) => {
             const title = `${slot + 1} · ${p.join(".")}`;
@@ -231,10 +229,8 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
         </Grid.Section>
       )}
       <Grid.Section title="Groups">{groups.map((g) => groupItem([...path, g], g))}</Grid.Section>
-      <Grid.Section title={terms.length ? `${leaves.length} matches` : "Tokens"}>
-        {leaves.map((t) =>
-          tokenItem(t, terms.length ? t.path.slice(path.length).join(".") : t.path[t.path.length - 1]),
-        )}
+      <Grid.Section title={query ? `${leaves.length} matches` : "Tokens"}>
+        {leaves.map((t) => tokenItem(t, query ? t.path.slice(path.length).join(".") : t.path[t.path.length - 1]))}
       </Grid.Section>
     </Grid>
   );
