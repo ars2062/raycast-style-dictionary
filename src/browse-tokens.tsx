@@ -56,14 +56,8 @@ type LevelProps = {
 };
 
 const slotKey = (slot: number) => String(slot + 1) as Keyboard.KeyEquivalent;
-const openShortcut = (slot: number): Keyboard.Shortcut => ({
-  macOS: { modifiers: ["cmd"], key: slotKey(slot) },
-  Windows: { modifiers: ["ctrl"], key: slotKey(slot) },
-});
-const optCmd = (key: Keyboard.KeyEquivalent): Keyboard.Shortcut => ({
-  macOS: { modifiers: ["cmd", "opt"], key },
-  Windows: { modifiers: ["ctrl", "alt"], key },
-});
+const openShortcut = (slot: number): Keyboard.Shortcut => ({ modifiers: ["cmd"], key: slotKey(slot) });
+const optCmd = (key: Keyboard.KeyEquivalent): Keyboard.Shortcut => ({ modifiers: ["cmd", "opt"], key });
 const pinShortcut = (slot: number) => optCmd(slotKey(slot));
 const COLOR_FORMATS = [
   { id: "hex", title: "HEX", key: "h" },

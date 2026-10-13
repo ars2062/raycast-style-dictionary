@@ -6,7 +6,6 @@
   "icon": "extension-icon.png",
   "author": "ars2062",
   "platforms": [
-    "Windows",
     "macOS"
   ],
   "categories": [

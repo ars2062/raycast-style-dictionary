@@ -54,8 +54,6 @@ Use **Enter Copies** in the project settings to choose what <kbd>↵</kbd> copie
 | <kbd>⌘</kbd> <kbd>1</kbd>–<kbd>9</kbd>                                              | Open a pinned group or copy a pinned token     |
 | <kbd>⌥</kbd> <kbd>⌘</kbd> <kbd>1</kbd>–<kbd>9</kbd>                                 | Pin the selected token or group to that slot   |
 
-On Windows, use <kbd>Ctrl</kbd> in place of <kbd>⌘</kbd> and <kbd>Alt</kbd> in place of <kbd>⌥</kbd>.
-
 ## Development
 
 ```sh
