@@ -30,7 +30,7 @@
   ],
   "tools": [],
   "dependencies": {
-    "@raycast/api": "^1.104.20",
+    "@raycast/api": "^2.8.0",
     "@raycast/utils": "^2.2.7",
     "culori": "^4.0.2",
     "json5": "^2.2.3",
