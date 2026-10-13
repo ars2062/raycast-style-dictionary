@@ -57,10 +57,10 @@ Use **Enter Copies** in the project settings to choose what <kbd>↵</kbd> copie
 ## Development
 
 ```sh
-pnpm install
-pnpm dev     # run in Raycast
-pnpm test
-pnpm lint
+npm install
+npm run dev     # run in Raycast
+npm test
+npm run lint
 ```
 
 ## License
