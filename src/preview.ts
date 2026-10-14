@@ -57,7 +57,7 @@ export function preview(t: Token): Grid.Item.Props["content"] {
         (_, i) => `<rect x="50" y="50" width="100" height="100" rx="12" fill="#fff" filter="url(#s${i})"/>`,
       );
       return svg(
-        `<defs>${filters}</defs>${rects.join("")}<rect x="50" y="50" width="100" height="100" rx="12" fill="#fff"/>`,
+        `<defs>${filters}</defs><rect width="200" height="200" rx="16" fill="#e9e9ee"/>${rects.join("")}<rect x="50" y="50" width="100" height="100" rx="12" fill="#fff"/>`,
       );
     }
     default:
