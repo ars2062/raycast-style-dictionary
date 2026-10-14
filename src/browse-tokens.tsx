@@ -37,21 +37,12 @@ export default function Command() {
       ))}
     </Grid.Dropdown>
   );
-  return <Browse key={project.id} project={project} accessory={accessory} />;
-}
-
-function Browse({ project, accessory }: { project: Project; accessory: Grid.Props["searchBarAccessory"] }) {
-  const { data: tokens = [], isLoading } = useCachedPromise(loadTokens, [project.dirs], {
-    failureToastOptions: { title: `Failed to load tokens for ${project.name}` },
-  });
-  return <Level project={project} tokens={tokens} path={[]} isLoading={isLoading} accessory={accessory} />;
+  return <Level key={project.id} project={project} path={[]} accessory={accessory} />;
 }
 
 type LevelProps = {
   project: Project;
-  tokens: Token[];
   path: string[];
-  isLoading?: boolean;
   accessory?: Grid.Props["searchBarAccessory"];
 };
 
@@ -66,7 +57,15 @@ const COLOR_FORMATS = [
   { id: "oklch", title: "OKLCH", key: "l" },
 ] as const;
 
-function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
+function Level({ project, path, accessory }: LevelProps) {
+  const {
+    data: tokens = [],
+    isLoading,
+    revalidate,
+  } = useCachedPromise(loadTokens, [project.dirs], {
+    execute: path.length === 0,
+    failureToastOptions: { title: `Failed to load tokens for ${project.name}` },
+  });
   const [search, setSearch] = useState("");
   const [pins, setPins] = usePins(project.id);
   const templates = parseTemplates(project.templates);
@@ -93,7 +92,16 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
     }
     return { main: project.defaultAction === "name" ? [name, value] : [value, name], templates: rendered };
   }
-  const openGroup = (p: string[]) => <Level project={project} tokens={tokens} path={p} />;
+  const openGroup = (p: string[]) => <Level project={project} path={p} />;
+
+  const reloadAction = (
+    <Action
+      title="Reload Tokens"
+      icon={Icon.ArrowClockwise}
+      shortcut={Keyboard.Shortcut.Common.Refresh}
+      onAction={revalidate}
+    />
+  );
 
   function pinActions(target: Pin) {
     const id = target.path.join(".");
@@ -139,6 +147,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
           ))}
         </ActionPanel.Section>
         <ActionPanel.Section>
+          {reloadAction}
           <Action.Push title="Manage Projects" icon={Icon.Gear} target={<ManageProjects />} />
         </ActionPanel.Section>
       </>
