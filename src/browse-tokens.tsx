@@ -223,7 +223,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
         </Grid.Section>
       )}
       <Grid.Section title="Groups">{groups.map((g) => groupItem([...path, g], g))}</Grid.Section>
-      <Grid.Section title={query ? `${leaves.length} matches` : "Tokens"}>
+      <Grid.Section title={query ? `${leaves.length} ${leaves.length === 1 ? "match" : "matches"}` : "Tokens"}>
         {leaves.map((t) => tokenItem(t, query ? t.path.slice(path.length).join(".") : t.path[t.path.length - 1]))}
       </Grid.Section>
     </Grid>
