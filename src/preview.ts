@@ -65,10 +65,12 @@ export function preview(t: Token): Grid.Item.Props["content"] {
   }
 }
 
-export function groupPreview(tokens: Token[]): Image.ImageLike | undefined {
-  const colors = tokens.flatMap((t) => (t.kind === "color" ? (colorFormats(t.value)?.rgb ?? []) : [])).slice(0, 4);
-  if (!colors.length) return undefined;
-  const w = 200 / colors.length;
+export function groupPreview(tokens: Token[]): Grid.Item.Props["content"] {
+  const all = tokens.flatMap((t) => (t.kind === "color" ? (colorFormats(t.value)?.rgb ?? []) : []));
+  if (!all.length) return preview(tokens[Math.floor(tokens.length / 2)]);
+  const n = Math.min(4, all.length);
+  const colors = Array.from({ length: n }, (_, i) => all[Math.round((i * (all.length - 1)) / Math.max(n - 1, 1))]);
+  const w = 200 / n;
   return svg(
     `${checker}<clipPath id="r"><rect width="200" height="200" rx="16"/></clipPath><g clip-path="url(#r)">${colors
       .map((rgb, i) => `<rect x="${i * w}" width="${w}" height="200" fill="${rgb}"/>`)

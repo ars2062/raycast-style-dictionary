@@ -152,7 +152,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
         key={key}
         title={title}
         subtitle={`${children.length} tokens`}
-        content={groupPreview(children) ?? { source: Icon.Folder, tintColor: "#888" }}
+        content={groupPreview(children)}
         actions={
           <ActionPanel>
             <Action.Push title="Open Group" icon={Icon.ArrowRight} target={openGroup(groupPath)} />
