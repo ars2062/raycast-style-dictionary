@@ -30,9 +30,7 @@ export function preview(t: Token): Grid.Item.Props["content"] {
     }
     case "dimension": {
       const w = t.value.endsWith("%") ? parseFloat(t.value) * 1.8 : px(t.value) * 2;
-      return svg(
-        `<rect x="10" y="76" width="${Math.min(Math.max(w, 2), 180)}" height="16" rx="4" fill="#5b8def"/>${text(t.value, { y: 140, size: 26 })}`,
-      );
+      return svg(`<rect x="10" y="88" width="${Math.min(Math.max(w, 2), 180)}" height="24" rx="6" fill="#5b8def"/>`);
     }
     case "fontFamily":
       return svg(text("Aa", { size: 96, family: t.value }));
