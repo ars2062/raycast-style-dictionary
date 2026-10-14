@@ -61,6 +61,7 @@ function Level({ project, path, accessory }: LevelProps) {
   const {
     data: tokens = [],
     isLoading,
+    error,
     revalidate,
   } = useCachedPromise(loadTokens, [project.dirs], {
     execute: path.length === 0,
@@ -222,6 +223,21 @@ function Level({ project, path, accessory }: LevelProps) {
       navigationTitle={path.length ? path.join(".") : project.name}
       searchBarAccessory={accessory}
     >
+      {!isLoading && (
+        <Grid.EmptyView
+          title={query ? "No Matching Tokens" : error ? "Couldn't Load Tokens" : "No Tokens Found"}
+          description={
+            query ? undefined : (error?.message ?? "Add .json or .json5 token files to this project's directories.")
+          }
+          actions={
+            <ActionPanel>
+              <Action.Push title="Edit Project" icon={Icon.Pencil} target={<ProjectForm project={project} />} />
+              {reloadAction}
+              <Action.Push title="Manage Projects" icon={Icon.Gear} target={<ManageProjects />} />
+            </ActionPanel>
+          }
+        />
+      )}
       {path.length === 0 && !query && (
         <Grid.Section title="Pinned">
           {livePins.map(({ path: p, group, slot }) => {
