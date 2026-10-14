@@ -89,7 +89,7 @@ function Level({ project, tokens, path, isLoading, accessory }: LevelProps) {
     const name = { title: "Copy Name", content: t.path.join(".") };
     const rendered = renderTemplates(templates, t).map((out) => ({ title: `Copy ${out}`, content: out }));
     if (project.defaultAction === "template" && rendered.length) {
-      return { main: [rendered[0], value, name], templates: rendered.slice(1) };
+      return { main: [rendered[0], name, value], templates: rendered.slice(1) };
     }
     return { main: project.defaultAction === "name" ? [name, value] : [value, name], templates: rendered };
   }
